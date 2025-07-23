@@ -1,0 +1,73 @@
+@import "tailwindcss/base";
+@import "tailwindcss/components";
+@import "assets/primevue/tailwind.css";
+@import "tailwindcss/utilities";
+@import "primeicons/primeicons.css";
+/* @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap'); */
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&display=swap');
+
+:root {
+  --surface-0: 255 255 255;
+  --surface-50: 250 250 250;
+  --surface-100: 245 245 245;
+  --surface-200: 238 238 238;
+  --surface-300: 224 224 224;
+  --surface-400: 189 189 189;
+  --surface-500: 158 158 158;
+  --surface-600: 117 117 117;
+  --surface-700: 97 97 97;
+  --surface-800: 66 66 66;
+  --surface-900: 33 33 33;
+  --surface-950: 3 6 23;
+  --p-content-border-radius: 6px;
+  --brand: #DD105E;
+  --brand-hover: #ba024b;
+  --secondary: #ff02661a;
+  --background: #010101;
+  --blk-50: #8B8B8D;
+  --blk-30: #27282E;
+  --blk-80: #19191F;
+}
+
+* {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: antialiased;
+  -ms-overflow-style: calc(3px+2px);
+}
+
+body {
+  background: var(--background);
+  /* font-family: 'Inter', 'Segoe UI', sans-serif; */
+  font-family: "DM Sans", serif;
+}
+
+.page-enter-active,
+.page-leave-active {
+  transition: all 0.4s;
+}
+.page-enter-from,
+.page-leave-to {
+  opacity: 0;
+  filter: blur(1rem);
+}
+
+::-webkit-scrollbar {
+  display: none;
+}
+
+.form-label {
+  @apply text-surface-400 font-normal text-sm leading-4;
+}
+
+.text-error {
+  @apply text-red-500 font-normal text-xs leading-3;
+}
+p {
+  margin-bottom: 0;
+}
+.google-btn {
+  @apply flex items-center text-surface-0 font-semibold text-sm px-10 w-full border border-blk-30 py-3.5 rounded-md relative justify-center hover:border-surface-700 transition-all;
+}
+.heading {
+  @apply text-surface-0 font-bold text-[36px] leading-[150%];
+}
