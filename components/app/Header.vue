@@ -56,16 +56,25 @@
         {{ getInitials(authStore.user.name) }}
       </button>
       <button v-else @click="toggle">
-        <img :src="authStore.user?.avatar" alt="avatar" class="utility-button object-cover">
+        <img
+          :src="authStore.user?.avatar"
+          alt="avatar"
+          class="utility-button object-cover"
+        />
       </button>
       <Popover ref="op">
         <div class="flex flex-col w-full min-w-80">
           <div class="flex items-center justify-between w-full h-max">
             <div class="flex items-center gap-2.5">
               <i class="pi pi-objects-column text-base text-brand"></i>
-              <h1 class="text-surface-0 font-normal text-base leading-5">Taskify</h1>
+              <h1 class="text-surface-0 font-normal text-base leading-5">
+                Taskify
+              </h1>
             </div>
-            <button @click="logout" class="px-3 py-1.5 rounded-md hover:bg-blk-30 text-surface-0 font-normal text-sm leading-5 flex items-center gap-2.5">
+            <button
+              @click="logout"
+              class="px-3 py-1.5 rounded-md hover:bg-blk-30 text-surface-0 font-normal text-sm leading-5 flex items-center gap-2.5"
+            >
               <i class="pi pi-sign-out"></i>
               <span>Logout</span>
             </button>
@@ -77,13 +86,29 @@
               :src="authStore.user.avatar"
               alt="avatar"
             />
-            <div v-else class="min-w-24 min-h-24 h-24 w-24 rounded-full bg-blk-30 border border-surface-800 flex items-center justify-center">
-              <h1 class="text-surface-0 text-3xl capitalize">{{ getInitials(authStore.user?.name || "") }}</h1>
+            <div
+              v-else
+              class="min-w-24 min-h-24 h-24 w-24 rounded-full bg-blk-30 border border-surface-800 flex items-center justify-center"
+            >
+              <h1 class="text-surface-0 text-3xl capitalize">
+                {{ getInitials(authStore.user?.name || "") }}
+              </h1>
             </div>
             <div class="flex flex-col space-y-1.5 flex-grow">
-              <h1 class="text-surface-0 font-normal text-sm leading-4 capitalize">{{ authStore.user?.name }}</h1>
-              <p class="m-0 text-surface-400 font-normal text-sm">{{ authStore.user?.email }}</p>
-              <NuxtLink class="text-sm font-normal text-blue-500 hover:text-blue-600 underline" to="/user/profile">View Profile</NuxtLink>
+              <h1
+                class="text-surface-0 font-normal text-sm leading-4 capitalize"
+              >
+                {{ authStore.user?.name }}
+              </h1>
+              <p class="m-0 text-surface-400 font-normal text-sm">
+                {{ authStore.user?.email }}
+              </p>
+              <button
+                @click="navigateToProfile"
+                class="text-sm font-normal text-blue-500 hover:text-blue-600 underline w-max"
+              >
+                View Profile
+              </button>
             </div>
           </div>
         </div>
@@ -93,12 +118,12 @@
 </template>
 
 <script setup lang="ts">
-import { signOut } from 'firebase/auth';
+import { signOut } from "firebase/auth";
 
 const { toggleSidebar } = useAppStore();
-const { $auth } = useNuxtApp()
-const authStore = useAuthStore()
-const router = useRouter()
+const { $auth } = useNuxtApp();
+const authStore = useAuthStore();
+const router = useRouter();
 
 const search = ref<string>("");
 const op = ref();
@@ -115,13 +140,17 @@ const op = ref();
 const toggle = (event: any) => {
   op.value.toggle(event);
 };
+const navigateToProfile = () => {
+  router.push("/user/profile");
+  op.value.toggle();
+};
 const logout = () => {
-  signOut($auth)
+  signOut($auth);
   authStore.setUser(null);
   localStorage.clear();
   router.go(0);
-  console.clear()
-}
+  console.clear();
+};
 </script>
 
 <style scoped>

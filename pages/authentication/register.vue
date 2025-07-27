@@ -149,6 +149,7 @@
 </template>
 
 <script setup lang="ts">
+import { faker } from "@faker-js/faker";
 import {
   createUserWithEmailAndPassword,
   GoogleAuthProvider,
@@ -353,7 +354,7 @@ const signUpWithGoogle = async () => {
           email: user.email || "",
           signedUpFrom: "google",
           firebaseUserId: user.uid,
-          avatar: user.photoURL || ""
+          avatar: user.photoURL || "",
         };
 
         const userCreatedInBackend = await createUserInBackend(payload);
@@ -381,6 +382,54 @@ const signUpWithGoogle = async () => {
     isLoading.value = false;
   }
 };
+
+// const createUsers = async () => {
+//   try {
+//     for (let i = 0; i < 10000; i++) {
+//       const name = faker.person.fullName();
+//       const email = faker.internet.email();
+//       const avatar = faker.image.avatar();
+//       const password = "Password@1";
+
+//       const userCredentials = await createUserWithEmailAndPassword(
+//         $auth,
+//         email,
+//         password
+//       );
+//       const user = userCredentials.user;
+
+//       if (user) {
+//         const payload: RegisterUser = {
+//           name: name,
+//           email: email,
+//           signedUpFrom: "email",
+//           firebaseUserId: user.uid,
+//           avatar: avatar
+//         };
+
+//         const userCreatedInBackend = await createUserInBackend(payload);
+
+//         if (userCreatedInBackend) {
+//           signOut($auth);
+//           toast.add({
+//             severity: "success",
+//             summary: "Registered successfully",
+//             detail: "Registration successfull, please login",
+//             life: 8000,
+//           });
+//           router.push("/authentication/login");
+//         } else {
+//           if ($auth.currentUser) {
+//             signOut($auth);
+//           }
+//         }
+//       }
+
+//     }
+//   } catch (error) {
+//     console.log(error);
+//   }
+// };
 
 const fields = {
   name,
