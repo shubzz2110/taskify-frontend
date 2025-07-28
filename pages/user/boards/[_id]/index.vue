@@ -106,7 +106,7 @@
         <div
           class="flex flex-col gap-y-2 w-[300px] min-w-[300px] max-w-[300px]"
           v-for="(section, index) in board.sections"
-          :key="index"
+          :key="section._id"
         >
           <!-- Section Name and Actions -->
           <div
@@ -127,14 +127,19 @@
           </div>
           <!-- Section Tasks -->
           <Container
-            @drop="(e:any) => onDrop(e, index)"
-            :get-child-payload="(i:number) => section.tasks[i]"
-            :group-name="`section-${index}`"
+            :get-child-payload="
+              (i:number) => ({
+                task: section.tasks[i],
+                sectionIndex: index,
+              })
+            "
+            @drop="(e:number) => onDrop(e, index)"
+            :group-name="'board-drag'"
             class="flex-1 flex flex-col w-full h-full gap-2.5"
           >
             <Draggable
-              v-for="(task, index) in section.tasks"
-              :key="index"
+              v-for="task in section.tasks"
+              :key="task._id"
               class="task-card"
             >
               <span class="indent-0">
@@ -302,7 +307,6 @@ const fetchBoard = async () => {
     startLoading();
     const response = await $axios.get(`/board/get-board/${route.params._id}`);
     if (response && response.status === 200) {
-      console.log(response.data);
       board.value = response.data?.board || null;
     } else {
       throw new Error("Unable to fetch board");
@@ -377,22 +381,38 @@ const showAddTaskModal = (boardId: string, section: Section) => {
   addTask.value = true;
 };
 
-const onDrop = (dropResult: any, sectionIndex: number) => {
-  const section = board.value?.sections?.[sectionIndex];
-  if (!section) return;
-  console.log("first");
+const onDrop = (dropResult: any, toSectionIndex: number) => {
   const { removedIndex, addedIndex, payload } = dropResult;
   if (removedIndex === null && addedIndex === null) return;
 
-  const updatedTasks = [...section.tasks];
+  const fromSectionIndex = payload.sectionIndex;
+  const task = payload.task;
+
+  // Defensive checks
+  const fromSection = board.value?.sections?.[fromSectionIndex];
+  const toSection = board.value?.sections?.[toSectionIndex];
+  if (!fromSection || !toSection) return;
+
+  // Remove task from original section safely
   if (removedIndex !== null) {
-    updatedTasks.splice(removedIndex, 1);
-  }
-  if (addedIndex !== null) {
-    updatedTasks.splice(addedIndex, 0, payload);
+    fromSection.tasks = [
+      ...fromSection.tasks.slice(0, removedIndex),
+      ...fromSection.tasks.slice(removedIndex + 1),
+    ];
   }
 
-  section.tasks = updatedTasks;
+  // Insert into new section
+  if (addedIndex !== null) {
+    const newTask = { ...task };
+    // Optional: update section ID here
+    newTask.section = toSection._id;
+    toSection.tasks = [
+      ...toSection.tasks.slice(0, addedIndex),
+      newTask,
+      ...toSection.tasks.slice(addedIndex),
+    ];
+  }
+  console.log(board.value)
 };
 </script>
 
@@ -401,6 +421,6 @@ const onDrop = (dropResult: any, sectionIndex: number) => {
   @apply flex items-center justify-center border border-dashed border-surface-800 rounded-full min-w-8 min-h-8 w-8 h-8 hover:bg-surface-700 transition-all duration-300 ease-in-out;
 }
 .task-card {
-  @apply bg-blk-80 border border-blk-30 rounded-md flex flex-col justify-between w-full min-h-32 h-auto px-5 py-3.5 hover:border-surface-800 transition-all cursor-pointer gap-4.5;
+  @apply bg-blk-80 border border-blk-30 rounded-md !flex flex-col justify-between w-full min-h-32 h-auto px-5 py-3.5 hover:border-surface-800 transition-all cursor-pointer gap-4.5;
 }
 </style>

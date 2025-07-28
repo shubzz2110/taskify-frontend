@@ -84,7 +84,7 @@ export interface Board {
 }
 
 export interface Section {
-  id: string;
+  _id: string;
   title: string;
   position: string;
   createdBy: string;
