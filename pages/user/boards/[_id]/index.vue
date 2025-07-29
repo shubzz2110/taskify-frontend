@@ -126,21 +126,20 @@
             </div>
           </div>
           <!-- Section Tasks -->
-          <Container
-            :get-child-payload="
-              (i:number) => ({
-                task: section.tasks[i],
-                sectionIndex: index,
-              })
-            "
-            @drop="(e:number) => onDrop(e, index)"
-            :group-name="'board-drag'"
-            class="flex-1 flex flex-col w-full h-full gap-2.5"
+          <div
+            class="flex-1 flex flex-col w-full h-full gap-2.5 transition-all duration-500 ease-in-out"
+            @drop="(e: DragEvent) => onDrop(e, section._id)"
+            @dragover.prevent
+            @dragenter.prevent
           >
-            <Draggable
-              v-for="task in section.tasks"
+            <div
+              v-for="(task, i) in section.tasks"
               :key="task._id"
-              class="task-card"
+              class="task-card transition-all duration-500 ease-in-out"
+              :draggable="true"
+              @drag="(e) => startDrag(e, task, section._id)"
+              @drop="(e) => onDrop(e, section._id, i)"
+              @dragend="onDragEnd"
             >
               <span class="indent-0">
                 <h1
@@ -209,15 +208,16 @@
                   </div>
                 </div>
               </div>
-            </Draggable>
+            </div>
             <button
               @click.stop="showAddTaskModal(board._id, section)"
               class="px-2.5 py-1.5 rounded-md text-white h-max text-sm font-normal flex items-center justify-center gap-2.5 leading-5 w-max hover:bg-blk-30 transition-all self-center"
+              :key="section._id"
             >
               <i class="pi pi-plus text-sm"></i>
               Add Task
             </button>
-          </Container>
+          </div>
         </div>
         <div class="w-[300px] min-w-[300px] max-w-[300px]">
           <button
@@ -259,8 +259,7 @@
 <script setup lang="ts">
 import moment from "moment";
 import CheckCircleFill from "~/assets/icons/check-circle-fill.vue";
-import type { Board, CreateSection, Section } from "~/types/types";
-import { Container, Draggable } from "vue3-smooth-dnd";
+import type { Board, CreateSection, Section, Task } from "~/types/types";
 
 definePageMeta({
   layout: "app",
@@ -298,6 +297,10 @@ const addTask = ref<boolean>(false);
 const selectedBoardId = ref<string | null>(null);
 const selectedSection = ref<Section | null>(null);
 
+const draggedTask = ref<Task | null>(null);
+const draggedFromSection = ref<string | null>(null);
+const isDragging = ref(false);
+
 onMounted(() => {
   fetchBoard();
 });
@@ -330,7 +333,7 @@ const closeInput = () => {
   } else {
     addSection.value = false;
     sectionTitle.value = "";
-    submitted = false; // just in case
+    submitted = false;
   }
 };
 
@@ -381,38 +384,76 @@ const showAddTaskModal = (boardId: string, section: Section) => {
   addTask.value = true;
 };
 
-const onDrop = (dropResult: any, toSectionIndex: number) => {
-  const { removedIndex, addedIndex, payload } = dropResult;
-  if (removedIndex === null && addedIndex === null) return;
+const startDrag = (e: DragEvent, task: Task, sectionId: string) => {
+  if (e.dataTransfer) {
+    draggedTask.value = task;
+    draggedFromSection.value = sectionId;
+    e.dataTransfer.setData("text/plain", task._id);
+    e.dataTransfer.dropEffect = "move";
+    (e.target as HTMLElement)?.classList?.add("dragging");
+    e.dataTransfer.effectAllowed = "move";
+  }
+};
 
-  const fromSectionIndex = payload.sectionIndex;
-  const task = payload.task;
+const onDragEnd = (event: DragEvent) => {
+  isDragging.value = false;
 
-  // Defensive checks
-  const fromSection = board.value?.sections?.[fromSectionIndex];
-  const toSection = board.value?.sections?.[toSectionIndex];
+  document.querySelectorAll(".task-card").forEach((el) => {
+    el.classList.remove("dragging");
+  });
+};
+
+const onDrop = (e: DragEvent, toSectionId: string, toIndex?: number) => {
+  const task = draggedTask.value;
+  const fromSectionId = draggedFromSection.value;
+
+  if (!task || !fromSectionId) return;
+
+  const fromSection: Section | undefined = board.value?.sections?.find(
+    (section) => section._id === fromSectionId
+  );
+  const toSection: Section | undefined = board.value?.sections?.find(
+    (section) => section._id === toSectionId
+  );
+
   if (!fromSection || !toSection) return;
 
-  // Remove task from original section safely
-  if (removedIndex !== null) {
-    fromSection.tasks = [
-      ...fromSection.tasks.slice(0, removedIndex),
-      ...fromSection.tasks.slice(removedIndex + 1),
-    ];
-  }
+  fromSection.tasks = fromSection.tasks.filter((t) => t._id !== task._id);
 
-  // Insert into new section
-  if (addedIndex !== null) {
-    const newTask = { ...task };
-    // Optional: update section ID here
-    newTask.section = toSection._id;
-    toSection.tasks = [
-      ...toSection.tasks.slice(0, addedIndex),
-      newTask,
-      ...toSection.tasks.slice(addedIndex),
-    ];
+  if (fromSectionId === toSectionId) {
+    if (toIndex !== undefined) {
+      fromSection.tasks.splice(toIndex, 0, task);
+    } else {
+      fromSection.tasks.push(task);
+    }
+  } else {
+    if (toIndex !== undefined) {
+      toSection.tasks.splice(toIndex, 0, task);
+    } else {
+      toSection.tasks.push(task);
+    }
   }
-  console.log(board.value)
+  updateTaskPositions();
+  draggedTask.value = null;
+  draggedFromSection.value = null;
+};
+
+const updateTaskPositions = async () => {
+  try {
+    const updatedTasks: any = [];
+    board.value?.sections?.forEach((section) => {
+      section.tasks.forEach((task, index) => {
+        updatedTasks.push({
+          taskId: task._id,
+          position: index,
+          sectionId: section._id,
+        });
+      });
+    });
+    await $axios.put("/task/update-positions", { tasks: updatedTasks });
+  } catch (error) {
+    console.log(error);
+  }
 };
 </script>
 

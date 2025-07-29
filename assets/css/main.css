@@ -4,7 +4,7 @@
 @import "tailwindcss/utilities";
 @import "primeicons/primeicons.css";
 /* @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap'); */
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&display=swap");
 
 :root {
   --surface-0: 255 255 255;
@@ -20,13 +20,13 @@
   --surface-900: 33 33 33;
   --surface-950: 3 6 23;
   --p-content-border-radius: 6px;
-  --brand: #DD105E;
+  --brand: #dd105e;
   --brand-hover: #ba024b;
   --secondary: #ff02661a;
   --background: #010101;
-  --blk-50: #8B8B8D;
-  --blk-30: #27282E;
-  --blk-80: #19191F;
+  --blk-50: #8b8b8d;
+  --blk-30: #27282e;
+  --blk-80: #19191f;
 }
 
 * {
@@ -70,4 +70,9 @@ p {
 }
 .heading {
   @apply text-surface-0 font-bold text-[36px] leading-[125%];
+}
+
+.task-card.dragging {
+  opacity: 0.5;
+  transform: scale(0.95);
 }
