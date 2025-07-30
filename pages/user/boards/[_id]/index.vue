@@ -483,16 +483,10 @@ const updateTaskPositions = async () => {
 
 <style scoped>
 .round-btn {
-  @apply flex items-center justify-center border border-dashed border-surface-800 rounded-full min-w-8 min-h-8 w-8 h-8 hover:bg-surface-700 transition-all duration-300 ease-in-out;
-}
-.task-card {
-  @apply bg-blk-80 border border-blk-30 rounded-md !flex flex-col justify-between w-full min-h-32 h-auto px-5 py-3.5 hover:border-surface-800 transition-all cursor-pointer gap-4.5;
-}
-.task-card.dragging {
-  opacity: 0.5;
+  @apply flex items-center justify-center rounded-full min-w-8 min-h-8 w-8 h-8 hover:bg-surface-700 transition-all duration-300 ease-in-out;
 }
 .pointer-events-none.fixed {
-  transition: transform 0.5s linear;
+  transition: transform 0s linear;
   will-change: transform;
 }
 </style>

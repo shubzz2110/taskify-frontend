@@ -1,15 +1,12 @@
 <template>
-  <div class="task-card transition-all duration-500 ease-in-out">
-    <span class="indent-0">
-      <h1 class="text-surface-0 font-normal text-sm leading-5 line-clamp-2">
-        <span class="mr-2.5 align-middle"
-          ><button class="transition-all duration-300 ease-in-out">
-            <CheckCircleFill
-              class="fill-surface-800 hover:fill-green-900 transition-all duration-300 ease-in-out"
-            /></button></span
-        >{{ task.title }}
-      </h1>
-    </span>
+  <div
+    @click="navigateToTaskDetails"
+    class="task-card transition-all duration-500 ease-in-out"
+  >
+    <h1 class="text-surface-0 font-light text-sm leading-5 line-clamp-2">
+      <span class="font-bold">{{ task.taskId }}&nbsp;</span>
+      <span>&nbsp;&nbsp;{{ task.title }}</span>
+    </h1>
     <div class="flex items-center justify-between w-full">
       <div class="flex items-center gap-2.5">
         <img
@@ -68,7 +65,6 @@
 
 <script setup lang="ts">
 import moment from "moment";
-import CheckCircleFill from "~/assets/icons/check-circle-fill.vue";
 
 const props = defineProps({
   task: {
@@ -80,6 +76,24 @@ const props = defineProps({
     required: true,
   },
 });
+
+const router = useRouter();
+
+const navigateToTaskDetails = () => {
+  router.push(
+    `/user/boards/${props.task.board}/${props.task.section}/${props.task._id}`
+  );
+};
 </script>
 
-<style scoped></style>
+<style scoped>
+.round-btn {
+  @apply flex items-center justify-center rounded-full min-w-8 min-h-8 w-8 h-8 hover:bg-surface-700 transition-all duration-300 ease-in-out border border-dashed border-blk-50;
+}
+.task-card {
+  @apply bg-blk-80 border border-blk-30 rounded-md !flex flex-col justify-between w-full min-h-32 h-auto px-5 py-3.5 hover:border-surface-800 transition-all cursor-pointer gap-4.5;
+}
+.task-card.dragging {
+  opacity: 0.5;
+}
+</style>

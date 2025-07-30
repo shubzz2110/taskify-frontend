@@ -110,6 +110,7 @@ export interface Task {
   createdBy: string;
   section: string;
   board: string;
+  taskId: string;
   createdAt: Date;
   updatedAt: Date;
 }
