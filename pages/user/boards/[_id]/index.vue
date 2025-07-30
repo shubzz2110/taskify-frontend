@@ -1,9 +1,12 @@
 <template>
+  <!-- Main container for the board view -->
   <div class="flex-1 flex flex-col w-full h-full overflow-hidden">
+    <!-- Conditional rendering only if board data is loaded -->
     <div
       class="flex-1 flex flex-col w-full h-full overflow-hidden"
       v-if="board"
     >
+      <!-- Header section with board title, description, and actions -->
       <div class="flex items-start justify-between w-full h-max px-7 pt-7">
         <div class="flex flex-col space-y-1.5">
           <div class="flex items-center gap-10 w-full h-max">
@@ -13,8 +16,7 @@
               <span class="text-2xl">&#9989;</span>
               <h1
                 v-tool-tip="{
-                  value:
-                    'Lorem ipsum dolor, sit amet consectetur adipisicing elit.',
+                  value: board.title,
                   showDelay: 300,
                   hideDelay: 300,
                 }"
@@ -23,6 +25,7 @@
                 {{ board.title }}
               </h1>
             </div>
+            <!-- Favourite button -->
             <button
               v-tool-tip="{
                 value: 'Make this board favourite.',
@@ -38,6 +41,7 @@
             {{ board.description }}
           </p>
         </div>
+        <!-- Share button -->
         <Button
           label="Share"
           icon="pi pi-share-alt"
@@ -45,6 +49,8 @@
           class="w-max !px-5"
         />
       </div>
+
+      <!-- Search, View and Sort Controls -->
       <div
         class="flex items-center justify-between w-full h-max pt-7 px-7 border-b border-blk-30 pb-5"
       >
@@ -99,16 +105,18 @@
           </IconField>
         </div>
       </div>
+
+      <!-- Main board section container for all lists and tasks -->
       <div
         class="flex-1 flex gap-5 py-2.5 px-7 overflow-y-auto overflow-x-auto"
       >
-        <!-- Section -->
+        <!-- Render each section with its tasks -->
         <div
-          class="flex flex-col gap-y-2 w-[300px] min-w-[300px] max-w-[300px]"
           v-for="(section, index) in board.sections"
           :key="section._id"
+          class="flex flex-col gap-y-2 w-[300px] min-w-[300px] max-w-[300px]"
         >
-          <!-- Section Name and Actions -->
+          <!-- Section Header with title and actions -->
           <div
             class="px-2.5 py-1.5 rounded-md bg-blk-80 flex items-center justify-between"
           >
@@ -118,112 +126,57 @@
             <div class="flex items-center gap-1.5">
               <button
                 @click.stop="showAddTaskModal(board._id, section)"
-                class="pi pi-plus text-surface-0 min-w-8 min-h-8 w-8 h-8 rounded-full flex items-center justify-center hover:bg-surface-800 transition-all duration-300 ease-in-out text-sm"
+                class="pi pi-plus text-surface-0 round-btn"
               ></button>
               <button
-                class="pi pi-ellipsis-v text-surface-0 min-w-8 min-h-8 w-8 h-8 rounded-full flex items-center justify-center hover:bg-surface-800 transition-all duration-300 ease-in-out text-sm"
+                class="pi pi-ellipsis-v text-surface-0 round-btn"
               ></button>
             </div>
           </div>
-          <!-- Section Tasks -->
+
+          <!-- Tasks List with drag-n-drop support -->
           <div
-            class="flex-1 flex flex-col w-full h-full gap-2.5 transition-all duration-500 ease-in-out"
+            class="flex-1 flex flex-col w-full h-full gap-2.5 transition-all duration-500 ease-in-out relative"
             @drop="(e: DragEvent) => onDrop(e, section._id)"
             @dragover.prevent
             @dragenter.prevent
           >
-            <div
+            <AppUserBoardsTask
               v-for="(task, i) in section.tasks"
               :key="task._id"
-              class="task-card transition-all duration-500 ease-in-out"
               :draggable="true"
-              @drag="(e) => startDrag(e, task, section._id)"
-              @drop="(e) => onDrop(e, section._id, i)"
+              @drop="(e: DragEvent) => onDrop(e, section._id, i)"
               @dragend="onDragEnd"
-            >
-              <span class="indent-0">
-                <h1
-                  class="text-surface-0 font-normal text-sm leading-5 line-clamp-2"
-                >
-                  <span class="mr-2.5 align-middle"
-                    ><button class="transition-all duration-300 ease-in-out">
-                      <CheckCircleFill
-                        class="fill-surface-800 hover:fill-green-900 transition-all duration-300 ease-in-out"
-                      /></button></span
-                  >{{ task.title }}
-                </h1>
-              </span>
-              <div class="flex items-center justify-between w-full">
-                <div class="flex items-center gap-2.5">
-                  <img
-                    v-if="task?.assignedTo?.avatar"
-                    class="rounded-full min-w-8 min-h-8 w-8 h-8"
-                    :src="task?.assignedTo?.avatar"
-                    alt="avatar"
-                  />
-                  <button v-else class="round-btn">
-                    <i
-                      v-if="task?.assignedTo?.avatar"
-                      class="pi pi-user text-sm text-surface-800"
-                    ></i>
-                    <span class="text-surface-100 font-normal text-sm">{{
-                      getInitials(task?.assignedTo?.name || "")
-                    }}</span>
-                  </button>
-                  <button
-                    v-if="task?.dueDate"
-                    class="text-surface-0 text-xs leading-3 font-normal"
-                  >
-                    {{ moment(task?.dueDate).format("MMM DD") }}
-                  </button>
-                  <button v-else class="round-btn">
-                    <i class="pi pi-calendar-plus text-sm text-surface-800"></i>
-                  </button>
-                </div>
-                <div class="flex items-center space-x-2.5">
-                  <div>
-                    <h1 class="text-surface-400 font-normal text-xs capitalize">
-                      Difficulty:
-                    </h1>
-                    <h6
-                      class="font-bold text-xs capitalize leading-3 text-surface-0"
-                    >
-                      {{ task.difficulty }}
-                    </h6>
-                  </div>
-                  <div class="flex flex-col">
-                    <h1 class="text-surface-400 font-normal text-xs capitalize">
-                      Priority:
-                    </h1>
-                    <h6
-                      class="font-bold text-xs leading-3 capitalize"
-                      :class="{
-                        'text-blue-500': task.priority === 'low',
-                        'text-red-500': task.priority === 'high',
-                        'text-yellow-500': task.priority === 'medium',
-                      }"
-                    >
-                      {{ task.priority }}
-                    </h6>
-                  </div>
-                </div>
-              </div>
-            </div>
+              @dragstart="(e: DragEvent) => onDragStart(e, task, section._id)"
+              :task="task"
+              :taskIndex="i"
+            />
+            <!-- Button to add new task -->
             <button
               @click.stop="showAddTaskModal(board._id, section)"
-              class="px-2.5 py-1.5 rounded-md text-white h-max text-sm font-normal flex items-center justify-center gap-2.5 leading-5 w-max hover:bg-blk-30 transition-all self-center"
-              :key="section._id"
+              class="px-2.5 py-1.5 rounded-md text-white text-sm font-normal flex items-center justify-center gap-2.5 w-max hover:bg-blk-30 transition-all self-center"
             >
               <i class="pi pi-plus text-sm"></i>
               Add Task
             </button>
           </div>
+
+          <!-- Floating clone for dragging visual cue -->
+          <AppUserBoardsTask
+            v-if="isDragging && draggedTask"
+            :task="draggedTask"
+            :task-index="1"
+            :style="draggedTaskStyle"
+            class="pointer-events-none max-w-[300px] h-[128px] fixed z-[9999] translate-x-0"
+          />
         </div>
+
+        <!-- Add Section Area -->
         <div class="w-[300px] min-w-[300px] max-w-[300px]">
           <button
             v-if="!addSection"
             @click.stop="addSection = true"
-            class="px-2.5 py-1.5 rounded-md bg-blk-80 text-white h-max text-sm font-normal flex items-center justify-center gap-2.5 leading-5 w-max"
+            class="px-2.5 py-1.5 rounded-md bg-blk-80 text-white text-sm font-normal flex items-center gap-2.5"
           >
             <i class="pi pi-plus text-sm"></i>
             Add Section
@@ -245,6 +198,8 @@
         </div>
       </div>
     </div>
+
+    <!-- Task Creation Modal -->
     <AppUserBoardsCreateTaskModal
       v-if="addTask"
       :showModal="addTask"
@@ -257,21 +212,27 @@
 </template>
 
 <script setup lang="ts">
-import moment from "moment";
-import CheckCircleFill from "~/assets/icons/check-circle-fill.vue";
+/**
+ * This component handles board display with sections and tasks,
+ * including drag-and-drop reordering, section creation, and task management.
+ */
+
 import type { Board, CreateSection, Section, Task } from "~/types/types";
 
+// Define layout and middleware
 definePageMeta({
   layout: "app",
   middleware: "auth-client",
 });
 
+// Nuxt & App utilities
 const route = useRoute();
 const { $axios } = useNuxtApp();
 const toast = useToast();
 const { startLoading, stopLoading } = useLoading();
 const authStore = useAuthStore();
 
+// View and sort options
 const viewItems = [
   { name: "List", code: "list" },
   { name: "Card", code: "card" },
@@ -283,43 +244,63 @@ const sortItems = [
   { name: "Z - A", code: "za" },
 ];
 
-const currentSelectedView = ref<string>("list");
-const currentSelectedSort = ref<string>("recent");
-const search = ref<string>("");
+// Reactive state variables
+const currentSelectedView = ref("list");
+const currentSelectedSort = ref("recent");
+const search = ref("");
 const board = ref<Board | null>(null);
 
-// Add section variables
-const addSection = ref<boolean>(false);
-const sectionTitle = ref<string>("");
+// Section creation state
+const addSection = ref(false);
+const sectionTitle = ref("");
 
-// Add Task variables
-const addTask = ref<boolean>(false);
+// Task modal state
+const addTask = ref(false);
 const selectedBoardId = ref<string | null>(null);
 const selectedSection = ref<Section | null>(null);
 
+// Drag-and-drop state
 const draggedTask = ref<Task | null>(null);
 const draggedFromSection = ref<string | null>(null);
 const isDragging = ref(false);
+const dragOffset = ref({ x: 0, y: 0 });
+const draggedTaskStyle = reactive({ top: "0px", left: "0px" });
 
+/**
+ * Lifecycle: Fetch board data on mount and track cursor while dragging
+ */
 onMounted(() => {
   fetchBoard();
+  document.addEventListener("dragover", onMouseMove);
 });
 
+/**
+ * Lifecycle: Clean up drag event listener
+ */
+onBeforeUnmount(() => {
+  document.removeEventListener("dragover", onMouseMove);
+});
+
+/**
+ * Fetches the board and its sections/tasks from the server
+ */
 const fetchBoard = async () => {
   try {
     startLoading();
-    const response = await $axios.get(`/board/get-board/${route.params._id}`);
-    if (response && response.status === 200) {
-      board.value = response.data?.board || null;
+    const { data, status } = await $axios.get(
+      `/board/get-board/${route.params._id}`
+    );
+    if (status === 200 && data?.board) {
+      board.value = data.board;
     } else {
-      throw new Error("Unable to fetch board");
+      throw new Error("Failed to load board data.");
     }
   } catch (error) {
-    console.log(error);
+    console.error(error);
     toast.add({
       severity: "error",
-      summary: "Unexpected error",
-      detail: "An unexpected error occurred. Please try again.",
+      summary: "Fetch Error",
+      detail: "Could not fetch board. Please try again.",
       life: 5000,
     });
   } finally {
@@ -327,132 +308,175 @@ const fetchBoard = async () => {
   }
 };
 
-const closeInput = () => {
-  if (sectionTitle.value.trim()) {
-    createSection();
-  } else {
-    addSection.value = false;
-    sectionTitle.value = "";
-    submitted = false;
-  }
-};
-
-let submitted: boolean;
-
-const createSection = async () => {
-  try {
-    if (submitted) return;
-    const title = sectionTitle.value.trim();
-    if (!title) return;
-
-    submitted = true;
-
-    startLoading();
-    if (sectionTitle.value.trim() !== "") {
-      const response = await $axios.post("/section/create", {
-        title: sectionTitle.value,
-        createdBy: authStore.user?._id,
-        board: board.value?._id,
-        position:
-          board.value?.sections?.length || [].length > 0
-            ? board.value?.sections?.length || 0 + 1
-            : 0,
-      } as CreateSection);
-      if (response && response.status === 200) {
-        board.value?.sections?.push(response.data.section);
-        sectionTitle.value = "";
-        addSection.value = false;
-      }
-    }
-  } catch (error) {
-    console.log(error);
-    toast.add({
-      severity: "error",
-      summary: "Unexpected error",
-      detail: "An unexpected error occurred. Please try again.",
-      life: 5000,
-    });
-  } finally {
-    stopLoading();
-    submitted = false;
-  }
-};
-
+/**
+ * Opens the modal to create a task under a specific board and section
+ */
 const showAddTaskModal = (boardId: string, section: Section) => {
   selectedBoardId.value = boardId;
   selectedSection.value = section;
   addTask.value = true;
 };
 
-const startDrag = (e: DragEvent, task: Task, sectionId: string) => {
-  if (e.dataTransfer) {
-    draggedTask.value = task;
-    draggedFromSection.value = sectionId;
-    e.dataTransfer.setData("text/plain", task._id);
-    e.dataTransfer.dropEffect = "move";
-    (e.target as HTMLElement)?.classList?.add("dragging");
-    e.dataTransfer.effectAllowed = "move";
+// Internal flag to avoid double submission
+let submitted = false;
+
+/**
+ * Closes section input or creates a section if title exists
+ */
+const closeInput = () => {
+  if (sectionTitle.value.trim()) {
+    createSection();
+  } else {
+    resetSectionInput();
   }
 };
 
-const onDragEnd = (event: DragEvent) => {
-  isDragging.value = false;
-
-  document.querySelectorAll(".task-card").forEach((el) => {
-    el.classList.remove("dragging");
-  });
+/**
+ * Resets the section input state
+ */
+const resetSectionInput = () => {
+  addSection.value = false;
+  sectionTitle.value = "";
+  submitted = false;
 };
 
+/**
+ * Creates a new section under the board
+ */
+const createSection = async () => {
+  const title = sectionTitle.value.trim();
+  if (!title || submitted) return;
+
+  try {
+    submitted = true;
+    startLoading();
+
+    const sectionPayload: CreateSection = {
+      title,
+      createdBy: authStore.user?._id!,
+      board: board.value?._id!,
+      position: board.value?.sections?.length ?? 0,
+    };
+
+    const { data, status } = await $axios.post(
+      "/section/create",
+      sectionPayload
+    );
+    if (status === 200 && data?.section) {
+      board.value?.sections?.push(data.section);
+      resetSectionInput();
+    }
+  } catch (error) {
+    console.error(error);
+    toast.add({
+      severity: "error",
+      summary: "Creation Failed",
+      detail: "Could not create section. Try again.",
+      life: 5000,
+    });
+  } finally {
+    stopLoading();
+    submitted = false;
+  }
+};
+
+/**
+ * Handles the mouse movement during dragging for visual preview
+ */
+const onMouseMove = (e: MouseEvent) => {
+  if (!isDragging.value) return;
+  draggedTaskStyle.left = `${e.clientX - dragOffset.value.x}px`;
+  draggedTaskStyle.top = `${e.clientY - dragOffset.value.y}px`;
+};
+
+/**
+ * Triggered when a task starts being dragged
+ */
+const onDragStart = (e: DragEvent, task: Task, sectionId: string) => {
+  if (!e.dataTransfer) return;
+
+  isDragging.value = true;
+  draggedTask.value = task;
+  draggedFromSection.value = sectionId;
+
+  e.dataTransfer.effectAllowed = "move";
+  e.dataTransfer.setData("text/plain", task._id);
+  e.dataTransfer.setDragImage(new Image(), 0, 0);
+
+  const targetRect = (e.target as HTMLElement).getBoundingClientRect();
+  dragOffset.value = {
+    x: e.clientX - targetRect.left,
+    y: e.clientY - targetRect.top,
+  };
+
+  draggedTaskStyle.left = `${e.clientX - dragOffset.value.x}px`;
+  draggedTaskStyle.top = `${e.clientY - dragOffset.value.y}px`;
+
+  (e.target as HTMLElement).classList.add("dragging");
+};
+
+/**
+ * Triggered when dragging ends
+ */
+const onDragEnd = () => {
+  isDragging.value = false;
+  document
+    .querySelectorAll(".task-card")
+    .forEach((el) => el.classList.remove("dragging"));
+};
+
+/**
+ * Handles dropping of a dragged task into a section or specific index
+ */
 const onDrop = (e: DragEvent, toSectionId: string, toIndex?: number) => {
   const task = draggedTask.value;
   const fromSectionId = draggedFromSection.value;
+  if (!task || !fromSectionId || !board.value) return;
 
-  if (!task || !fromSectionId) return;
-
-  const fromSection: Section | undefined = board.value?.sections?.find(
-    (section) => section._id === fromSectionId
+  const fromSection: Section | undefined = board?.value?.sections?.find(
+    (s) => s._id === fromSectionId
   );
-  const toSection: Section | undefined = board.value?.sections?.find(
-    (section) => section._id === toSectionId
+  const toSection: Section | undefined = board?.value?.sections?.find(
+    (s) => s._id === toSectionId
   );
-
   if (!fromSection || !toSection) return;
 
+  // Remove from old section
   fromSection.tasks = fromSection.tasks.filter((t) => t._id !== task._id);
 
+  // Insert in new section or new position
   if (fromSectionId === toSectionId) {
-    if (toIndex !== undefined) {
-      fromSection.tasks.splice(toIndex, 0, task);
-    } else {
-      fromSection.tasks.push(task);
-    }
+    toIndex !== undefined
+      ? fromSection.tasks.splice(toIndex, 0, task)
+      : fromSection.tasks.push(task);
   } else {
-    if (toIndex !== undefined) {
-      toSection.tasks.splice(toIndex, 0, task);
-    } else {
-      toSection.tasks.push(task);
-    }
+    toIndex !== undefined
+      ? toSection.tasks.splice(toIndex, 0, task)
+      : toSection.tasks.push(task);
   }
+
   updateTaskPositions();
   draggedTask.value = null;
   draggedFromSection.value = null;
 };
 
+/**
+ * Sends updated task positions to the backend after drag-and-drop
+ */
 const updateTaskPositions = async () => {
   try {
-    const updatedTasks: any = [];
-    board.value?.sections?.forEach((section) => {
-      section.tasks.forEach((task, index) => {
-        updatedTasks.push({
+    const updatedTasks =
+      board.value?.sections?.flatMap((section) =>
+        section.tasks.map((task, index) => ({
           taskId: task._id,
           position: index,
           sectionId: section._id,
-        });
-      });
-    });
+        }))
+      ) ?? [];
+
     await $axios.put("/task/update-positions", { tasks: updatedTasks });
   } catch (error) {
-    console.log(error);
+    console.error("Failed to update positions", error);
   }
 };
 </script>
@@ -463,5 +487,12 @@ const updateTaskPositions = async () => {
 }
 .task-card {
   @apply bg-blk-80 border border-blk-30 rounded-md !flex flex-col justify-between w-full min-h-32 h-auto px-5 py-3.5 hover:border-surface-800 transition-all cursor-pointer gap-4.5;
+}
+.task-card.dragging {
+  opacity: 0.5;
+}
+.pointer-events-none.fixed {
+  transition: transform 0.5s linear;
+  will-change: transform;
 }
 </style>

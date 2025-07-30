@@ -42,7 +42,7 @@ export interface CreateBoardType {
 export interface CreateSection {
   title: string;
   createdBy: string | undefined;
-  tasks: CreateTask[];
+  tasks?: CreateTask[];
   board: string;
   position: number;
 }

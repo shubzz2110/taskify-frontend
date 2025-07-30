@@ -71,8 +71,3 @@ p {
 .heading {
   @apply text-surface-0 font-bold text-[36px] leading-[125%];
 }
-
-.task-card.dragging {
-  opacity: 0.5;
-  transform: scale(0.95);
-}
