@@ -224,7 +224,6 @@ const fetchBoards = async () => {
     startLoading();
     const response = await $axios.get("/board/get");
     if (response && response.status === 200) {
-      console.log(response.data);
       boards.value = response.data.boards;
     } else {
       toast.add({
