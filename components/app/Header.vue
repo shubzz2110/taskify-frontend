@@ -19,7 +19,7 @@
         <h1 class="app-name">Taskify</h1>
       </div>
     </div>
-    <IconField>
+    <!-- <IconField>
       <InputIcon class="pi pi-search" />
       <InputText
         v-model="search"
@@ -28,7 +28,7 @@
         size="small"
         class="xl:min-w-[28rem] rounded-full !bg-blk-30"
       />
-    </IconField>
+    </IconField> -->
     <div class="flex items-center space-x-2.5">
       <!-- <ToggleSwitch 
         @value-change="handleColorMode"
