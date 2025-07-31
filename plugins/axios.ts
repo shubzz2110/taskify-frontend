@@ -1,21 +1,30 @@
+// plugins/axios.ts
 import axios, { AxiosError, type AxiosInstance } from "axios";
 import { getAuth } from "firebase/auth";
 
 export default defineNuxtPlugin(() => {
   const config = useRuntimeConfig();
-  const token = useCookie("accessToken");
+
+  const baseURL: string =
+    process.env.NODE_ENV === "production"
+      ? String(config.public.apiBaseUrlProd)
+      : String(config.public.apiBaseUrlLocal);
 
   const axiosInstance: AxiosInstance = axios.create({
-    baseURL: config.public.apiBaseUrl,
+    baseURL,
   });
 
   axiosInstance.interceptors.request.use(
     async (config) => {
       const auth = getAuth();
-      config.headers.Authorization = `Bearer ${await auth?.currentUser?.getIdToken()}`;
+      const user = auth.currentUser;
+      if (user) {
+        const token = await user.getIdToken();
+        config.headers.Authorization = `Bearer ${token}`;
+      }
       return config;
     },
-    (error: AxiosError) => Promise.reject(error.response?.data)
+    (error: AxiosError) => Promise.reject(error.response?.data || error)
   );
 
   return {
