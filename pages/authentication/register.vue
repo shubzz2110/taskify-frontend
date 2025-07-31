@@ -152,6 +152,7 @@
 import { faker } from "@faker-js/faker";
 import {
   createUserWithEmailAndPassword,
+  deleteUser,
   GoogleAuthProvider,
   signInWithPopup,
   signOut,
@@ -323,6 +324,7 @@ const handleRegisterUser = async () => {
           router.push("/authentication/login");
         } else {
           if ($auth.currentUser) {
+            deleteUser(userCreatedInFirebase)
             signOut($auth);
           }
         }
@@ -370,6 +372,7 @@ const signUpWithGoogle = async () => {
           router.push("/authentication/login");
         } else {
           if ($auth.currentUser) {
+            deleteUser(user)
             signOut($auth);
           }
         }
