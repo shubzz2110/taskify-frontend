@@ -374,7 +374,7 @@ const signUpWithGoogle = async () => {
           }
         }
       }
-    });
+    }).catch((e) => console.log(e));
   } catch (error) {
     signOut($auth);
     console.log(error);

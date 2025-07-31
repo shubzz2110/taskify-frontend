@@ -285,7 +285,6 @@ const signInWithGoogle = async () => {
       authStore.setUser(user);
       router.push("/user/home");
     } else {
-      await deleteUser(firebaseUser);
       await signOut($auth);
 
       toast.add({
